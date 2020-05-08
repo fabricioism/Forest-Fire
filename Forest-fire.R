@@ -2,40 +2,37 @@
 library(readr)
 library(dplyr)
 library(ggplot2)
+library(purrr)
+
 #Load Data
 forest_fire_data <- read.csv('forestfires.csv')
 
-#Group by day
-forest_fires_day <- forest_fire_data %>%
-  group_by(day) %>%
-  summarise(total_fires = n())
+#BOX PLOTS
+#Function by Month
+box_plot_month<- function(x, y){
+  ggplot(data = forest_fire_data) +
+    aes_string(x = x, y = y) +
+    geom_boxplot() +
+    labs(title = "Distribution by month") +
+    theme(panel.background = element_rect(fill = 'white'))
+}
 
-#reordered
-forest_fires_day<- forest_fires_day %>% 
-  mutate(day = factor(day, levels = c("sun", "mon", "tue", "wed", 
-  "thu", "fri", "sat")))
+#Function by Day
+box_plot_day<- function(x, y){
+  ggplot(data = forest_fire_data) +
+    aes_string(x = x, y = y) +
+    geom_boxplot() +
+    labs(title = "Distribution by Day") +
+    theme(panel.background = element_rect(fill = 'white'))
+}
 
-#Graph
-ggplot(data = forest_fires_day) +
-  aes(x = day, y = total_fires) +
-  geom_bar(stat = 'identity') +
-  labs(title = "Fires by Day", x = "Day", y = "Total fires") +
-  theme(panel.background = element_rect(fill = 'white'))
+#Variables
+x_var_day<- names(forest_fire_data)[4]
+x_var_month<- names(forest_fire_data)[3]
+y_var<- names(forest_fire_data)[5:12] 
 
 
-#Group by month
-forest_fires_month <- forest_fire_data %>%
-  group_by(month) %>%
-  summarise(total_fires = n())
+#Mapping
+fires_by_month <- map2(x_var_month, y_var, box_plot_month)
+fires_by_day <- map2(x_var_day, y_var, box_plot_day)
 
-#reordered
-forest_fires_month<- forest_fires_month %>% 
-  mutate(month = factor(month, levels = c("jan", "feb", "mar", 
-  "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")))
-
-#Graph
-ggplot(data = forest_fires_month) +
-  aes(x = month, y = total_fires) +
-  geom_bar(stat = 'identity') +
-  labs(title = "Fires by Month", x = "Month", y = "Total fires") +
-  theme(panel.background = element_rect(fill = 'white'))
